@@ -1,0 +1,25 @@
+# zarf-config.yaml
+
+---
+package:
+  deploy:
+    set:
+      # Database container. 
+      DATABASE_PGDATABASE: "whalefall"
+      DATABASE_PGUSER: "postgres"
+      DATABASE_PGPASSWORD: "postgres"
+
+      # Backend container.
+      BACKEND_SECRET_KEY: "whalefall"
+      BACKEND_DEBUG: "True"
+      BACKEND_DB_ENGINE: "postgres"
+      BACKEND_PGHOST: "whalefall-database"
+      BACKEND_PGDATABASE: "whalefall"
+      BACKEND_PGPORT: "5432"
+      BACKEND_PGSSLMODE: "disable"
+      BACKEND_PGUSER: "postgres"
+      BACKEND_PGPASSWORD: "postgres"
+
+      # Frontend container.
+      FRONTEND_PORT: "8080"
+      FRONTEND_HOSTNAME: "0.0.0.0"
