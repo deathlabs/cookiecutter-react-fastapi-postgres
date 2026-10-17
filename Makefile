@@ -24,14 +24,20 @@ build: clean
 
 .PHONY: test
 .SILENT: test
-test: 
+test: clean-test
 	cookiecutter $(TEMPLATE_DIR) --no-input -o $(TEMP_DIR)
 	TARGET_DIR=$$(ls -d $(TEMP_DIR)/* | head -n 1) &&\
-	$(MAKE) --no-print-directory -C "$$TARGET_DIR" &&\
-	$(MAKE) --no-print-directory -C "$$TARGET_DIR" stop-containers &&\
-	$(MAKE) --no-print-directory -C "$$TARGET_DIR" remove-containers &&\
-	$(MAKE) --no-print-directory -C "$$TARGET_DIR" remove-container-images &&\
-	$(MAKE) --no-print-directory clean
+	$(MAKE) --no-print-directory -C "$$TARGET_DIR" test-containers &&\
+	$(MAKE) --no-print-directory clean-test
+
+# ---------------------------------------------------------
+# Clean the test directory.
+# ---------------------------------------------------------
+
+.PHONY: clean-test
+.SILENT: clean-test
+clean-test:
+	rm -rf $(TEMP_DIR)
 
 # ---------------------------------------------------------
 # Clean the build directory.
@@ -40,4 +46,4 @@ test:
 .PHONY: clean
 .SILENT: clean
 clean:
-	rm -rf $(TEMP_DIR)
+	rm -rf $(BUILD_DIR) $(TEMP_DIR)

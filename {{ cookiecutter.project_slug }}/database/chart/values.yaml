@@ -1,0 +1,21 @@
+# database/chart/values.yaml
+
+---
+app: {{ cookiecutter.project_slug }}
+namespace: {{ cookiecutter.project_slug }}
+replicaCount: 1
+image:
+  pullPolicy: Always
+  repository: {{ cookiecutter.project_slug }}/database
+  tag: latest
+service:
+  type: ClusterIP
+  name: database
+  port: 5432
+storage:
+  path: /var/lib/postgresql
+  size: 5Gi
+database:
+  name: {{ cookiecutter.project_slug }}
+  user: postgres
+  password: postgres

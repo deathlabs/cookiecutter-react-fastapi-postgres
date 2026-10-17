@@ -1,0 +1,59 @@
+# zarf.yaml
+
+---
+kind: ZarfPackageConfig
+metadata:
+  name: {{ cookiecutter.project_slug }}
+  version: 0.1.0
+  annotations:
+    dev.uds.title: {{ cookiecutter.project_slug }}
+
+variables:
+  - name: OPENAI_APIKEY
+    sensitive: true
+    description: OpenAI API key (used by inference)
+  - name: GEOCODING_APIKEY
+    sensitive: true
+    description: Geocoding API key (used by tools)
+
+components:
+  - name: uds-package
+    required: true
+    manifests:
+      - name: {{ cookiecutter.project_slug }}
+        namespace: {{ cookiecutter.project_slug }}
+        files:
+          - uds-package.yaml
+  - name: database
+    required: true
+    charts:
+      - name: database
+        version: 0.1.0
+        namespace: {{ cookiecutter.project_slug }}
+        localPath: database/chart
+        valuesFiles:
+          - database/chart/values.yaml
+    images:
+      - {{ cookiecutter.project_slug }}/database:latest
+  - name: backend
+    required: true
+    charts:
+      - name: backend
+        version: 0.1.0
+        namespace: {{ cookiecutter.project_slug }}
+        localPath: backend/chart
+        valuesFiles:
+          - backend/chart/values.yaml
+    images:
+      - {{ cookiecutter.project_slug }}/backend:latest
+  - name: frontend
+    required: true
+    charts:
+      - name: frontend
+        version: 0.1.0
+        namespace: {{ cookiecutter.project_slug }}
+        localPath: frontend/chart
+        valuesFiles:
+          - frontend/chart/values.yaml
+    images:
+      - {{ cookiecutter.project_slug }}/frontend:latest

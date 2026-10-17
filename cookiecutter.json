@@ -27,5 +27,7 @@
   "author": "Victor Fernandez III",
   "year": 2026,
   "github_organization": "deathlabs",
-  "github_repository": "{{ cookiecutter.github_organization }}/{{ cookiecutter.project_slug }}"
+  "github_repository": "{{ cookiecutter.github_organization }}/{{ cookiecutter.project_slug }}",
+  "__deployment_slug": "{{ cookiecutter.project_slug.replace('_', '-') }}",
+  "__github_repository_name": "{{ cookiecutter.github_repository.split('/')[-1] }}"
 }

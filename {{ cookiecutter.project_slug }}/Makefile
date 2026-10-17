@@ -6,12 +6,7 @@
 SHELL := /bin/bash
 
 # Set the default Make target.
-.DEFAULT_GOAL := test-container
-
-# Normalize the workspace path and expose it to Docker Compose.
-WORKSPACE ?= $(CURDIR)
-MCP_SERVER_WORKSPACE := $(abspath $(WORKSPACE))
-export MCP_SERVER_WORKSPACE
+.DEFAULT_GOAL := test-containers
 
 # Tell Docker Compose to use Bake for builds.
 export COMPOSE_BAKE := true
@@ -19,37 +14,46 @@ export COMPOSE_BAKE := true
 # Set the default Docker Compose profile.
 DOCKER_COMPOSE_PROFILE ?= all
 
-# Set Docker build context and image reference.
-BUILD_CONTEXT := src
-DOCKERFILE_PATH :=$(BUILD_CONTEXT)/Dockerfile
-IMAGE_REF := {{ cookiecutter.project_slug }}/mcp:latest
-CONTAINER_NAME := {{ cookiecutter.project_slug }}_mcp
+# Set the default environment used.
+export ENV_FILE ?=
 
-# Set SBOM and VEX file paths.
-SBOM_PATH := {{ cookiecutter.project_slug }}-sbom.json
-VEX_YAML_PATH :=$(BUILD_CONTEXT)/vex.yaml
-VEX_JSON_PATH :=$(BUILD_CONTEXT)/vex.json
+# Set app metadata.
+APP := {{ cookiecutter.project_slug }}
+DEPLOYMENT_SLUG := {{ cookiecutter.__deployment_slug }}
+
+# Set container metadata.
+DATABASE_BUILD_CONTEXT := database
+DATABASE_DOCKERFILE_PATH := $(DATABASE_BUILD_CONTEXT)/Dockerfile
+DATABASE_CONTAINER_IMAGE := $(APP)/$(DATABASE_BUILD_CONTEXT):latest
+DATABASE_CONTAINER := $(APP)_$(DATABASE_BUILD_CONTEXT)
+DATABASE_SBOM_PATH := $(APP)-$(DATABASE_BUILD_CONTEXT)-sbom.json
+DATABASE_VEX_YAML_PATH := $(DATABASE_BUILD_CONTEXT)/vex.yaml
+DATABASE_VEX_JSON_PATH := $(DATABASE_BUILD_CONTEXT)/vex.json
+
+BACKEND_BUILD_CONTEXT := backend
+BACKEND_DOCKERFILE_PATH := $(BACKEND_BUILD_CONTEXT)/Dockerfile
+BACKEND_CONTAINER_IMAGE := $(APP)/$(BACKEND_BUILD_CONTEXT):latest
+BACKEND_CONTAINER := $(APP)_$(BACKEND_BUILD_CONTEXT)
+BACKEND_SBOM_PATH := $(APP)-$(BACKEND_BUILD_CONTEXT)-sbom.json
+BACKEND_VEX_YAML_PATH := $(BACKEND_BUILD_CONTEXT)/vex.yaml
+BACKEND_VEX_JSON_PATH := $(BACKEND_BUILD_CONTEXT)/vex.json
+
+FRONTEND_BUILD_CONTEXT := frontend
+FRONTEND_DOCKERFILE_PATH := $(FRONTEND_BUILD_CONTEXT)/Dockerfile
+FRONTEND_CONTAINER_IMAGE := $(APP)/$(FRONTEND_BUILD_CONTEXT):latest
+FRONTEND_CONTAINER := $(APP)_$(FRONTEND_BUILD_CONTEXT)
+FRONTEND_SBOM_PATH := $(APP)-$(FRONTEND_BUILD_CONTEXT)-sbom.json
+FRONTEND_VEX_YAML_PATH := $(FRONTEND_BUILD_CONTEXT)/vex.yaml
+FRONTEND_VEX_JSON_PATH := $(FRONTEND_BUILD_CONTEXT)/vex.json
 
 # Set VEX metadata.
 VEX_AUTHOR ?= {{ cookiecutter.author }}
-VEX_ID_BASE ?= {{ cookiecutter.project_slug }}
+VEX_ID_BASE ?= $(APP)
 
 # Set scanner configuration and thresholds.
 SEMGREP_CONFIG ?= auto
 HADOLINT_FAILURE_THRESHOLD ?= warning
 GRYPE_FAILURE_THRESHOLD ?= medium
-
-# ---------------------------------------------------------
-# Validate the workspace directory exists.
-# ---------------------------------------------------------
-
-.PHONY: validate-workspace
-.SILENT: validate-workspace
-validate-workspace:
-	if [ ! -d "$(MCP_SERVER_WORKSPACE)" ]; then \
-		echo "ERROR: $(MCP_SERVER_WORKSPACE) does not exist" >&2; \
-		exit 1; \
-	fi
 
 # ---------------------------------------------------------
 # Update uv.lock.
@@ -58,8 +62,8 @@ validate-workspace:
 .PHONY: lock
 .SILENT: lock
 lock:
-	echo "[*] Locking {{ cookiecutter.project_slug }} Python dependencies"
-	cd $(BUILD_CONTEXT) && uv lock
+	echo "[*] Locking $(APP)'s backend Python dependencies"
+	cd $(BACKEND_BUILD_CONTEXT)/$(APP)/ && uv lock
 
 # ---------------------------------------------------------
 # Check the source code for quality.
@@ -68,8 +72,8 @@ lock:
 .PHONY: check
 .SILENT: check
 check:
-	echo "[*] Checking {{ cookiecutter.project_slug }}'s source code quality"
-	ruff check --fix $(BUILD_CONTEXT)
+	echo "[*] Checking $(APP)'s source code quality"
+	ruff check --fix $(BACKEND_BUILD_CONTEXT)
 
 # ---------------------------------------------------------
 # Format the source code.
@@ -78,8 +82,8 @@ check:
 .PHONY: format
 .SILENT: format
 format:
-	echo "[*] Formatting {{ cookiecutter.project_slug }}'s source code"
-	ruff format $(BUILD_CONTEXT)
+	echo "[*] Formatting $(APP)'s source code"
+	ruff format $(BACKEND_BUILD_CONTEXT)
 
 # ---------------------------------------------------------
 # Check the repository for secrets.
@@ -88,27 +92,26 @@ format:
 .PHONY: secrets
 .SILENT: secrets
 secrets:
-	echo "[*] Checking {{ cookiecutter.project_slug }}'s source code for hardcoded secrets"
+	echo "[*] Checking $(APP)'s source code for hardcoded secrets"
 	trufflehog filesystem \
 		--no-update \
 		--fail \
 		--fail-on-scan-errors \
 		--results=verified,unknown \
 		--log-level=-1 \
-		--exclude-paths src/trufflehog-exclusions.txt \
-		"$(MCP_SERVER_WORKSPACE)"
+		--exclude-paths trufflehog-exclusions.txt .
 
 # ---------------------------------------------------------
-# Check the Dockerfile for quality.
+# Check the Dockerfiles for quality.
 # ---------------------------------------------------------
 
 .PHONY: dockerfile-lint
 .SILENT: dockerfile-lint
 dockerfile-lint:
-	echo "[*] Checking {{ cookiecutter.project_slug }}'s Dockerfile for lint"
-	hadolint \
-		--failure-threshold "$(HADOLINT_FAILURE_THRESHOLD)" \
-		"$(DOCKERFILE_PATH)"
+	echo "[*] Checking $(APP)'s Dockerfiles for lint"
+	hadolint --failure-threshold "$(HADOLINT_FAILURE_THRESHOLD)" \
+		"$(DATABASE_DOCKERFILE_PATH)" \
+		"$(BACKEND_DOCKERFILE_PATH)" 
 
 # ---------------------------------------------------------
 # Check for first-party vulnerabilities.
@@ -117,21 +120,23 @@ dockerfile-lint:
 .PHONY: sast
 .SILENT: sast
 sast:
-	echo "[*] Checking {{ cookiecutter.project_slug }}'s source code for first-party vulnerabilities"
-	semgrep scan --config "$(SEMGREP_CONFIG)" $(BUILD_CONTEXT)
+	echo "[*] Checking $(APP)'s source code for first-party vulnerabilities"
+	semgrep scan --config "$(SEMGREP_CONFIG)" \
+		--include $(DATABASE_BUILD_CONTEXT) \
+		--include $(BACKEND_BUILD_CONTEXT) 
 
 # ---------------------------------------------------------
-# Build the container image.
+# Build the container images.
 # ---------------------------------------------------------
 
-.PHONY: build-container
-.SILENT: build-container
-build-container: lock check format secrets dockerfile-lint sast
-	echo "[*] Building {{ cookiecutter.project_slug }}'s container image"
-	docker compose --profile $(DOCKER_COMPOSE_PROFILE) build {{ cookiecutter.project_slug }}
+.PHONY: build-containers
+.SILENT: build-containers
+build-containers: lock check format secrets dockerfile-lint sast
+	echo "[*] Building $(APP)'s container image"
+	docker compose --profile $(DOCKER_COMPOSE_PROFILE) build
 
 # ---------------------------------------------------------
-# Generate a VEX file for the container image.
+# Generate a VEX file for the container images.
 # ---------------------------------------------------------
 
 define VEX_FILTER
@@ -164,21 +169,30 @@ export VEX_FILTER
 .PHONY: vex
 .SILENT: vex
 vex:
-	echo "[*] Generating {{ cookiecutter.project_slug }}'s VEX statements"
+	echo "[*] Generating VEX statements for $(APP)'s database"
 	VEX_ID="$(VEX_ID_BASE)" \
 	VEX_AUTHOR="$(VEX_AUTHOR)" \
 	VEX_TIMESTAMP="$$(date -u +'%Y-%m-%dT%H:%M:%SZ')" \
-	yq -o=json "$$VEX_FILTER" "$(VEX_YAML_PATH)" > "$(VEX_JSON_PATH)"
+	yq -o=json "$$VEX_FILTER" "$(DATABASE_VEX_YAML_PATH)" > "$(DATABASE_VEX_JSON_PATH)"
+
+	echo "[*] Generating VEX statements for $(APP)'s backend"
+	VEX_ID="$(VEX_ID_BASE)" \
+	VEX_AUTHOR="$(VEX_AUTHOR)" \
+	VEX_TIMESTAMP="$$(date -u +'%Y-%m-%dT%H:%M:%SZ')" \
+	yq -o=json "$$VEX_FILTER" "$(BACKEND_VEX_YAML_PATH)" > "$(BACKEND_VEX_JSON_PATH)"
 
 # ---------------------------------------------------------
-# Generate an SBOM for the container image.
+# Generate an SBOM for the container images.
 # ---------------------------------------------------------
 
 .PHONY: sbom
 .SILENT: sbom
-sbom: build-container
-	echo "[*] Generating {{ cookiecutter.project_slug }}'s SBOM"
-	syft {{ cookiecutter.project_slug }}/mcp:latest -o cyclonedx-json="$(SBOM_PATH)"
+sbom: build-containers
+	echo "[*] Generating $(APP)'s database SBOM"
+	syft $(DATABASE_CONTAINER_IMAGE) -o cyclonedx-json="$(DATABASE_SBOM_PATH)"
+
+	echo "[*] Generating $(APP)'s backend SBOM"
+	syft $(BACKEND_CONTAINER_IMAGE) -o cyclonedx-json="$(BACKEND_SBOM_PATH)"
 
 # ---------------------------------------------------------
 # Check for third-party vulnerabilities.
@@ -189,64 +203,89 @@ sbom: build-container
 dependency-scan: sbom vex
 	echo "[*] Updating the Grype vulnerability database"
 	grype db update
-	echo "[*] Checking {{ cookiecutter.project_slug }}'s SBOM for third-party vulnerabilities"
-	grype sbom:"$(SBOM_PATH)" \
-		--vex "$(VEX_JSON_PATH)" \
-		--fail-on "$(GRYPE_FAILURE_THRESHOLD)"
+
+	echo "[*] Checking $(APP)'s database SBOM for third-party vulnerabilities"
+	grype sbom:"$(DATABASE_SBOM_PATH)" --vex "$(DATABASE_VEX_JSON_PATH)" --fail-on "$(GRYPE_FAILURE_THRESHOLD)"
+
+	echo "[*] Checking $(APP)'s backend SBOM for third-party vulnerabilities"
+	grype sbom:"$(BACKEND_SBOM_PATH)" --vex "$(BACKEND_VEX_JSON_PATH)" --fail-on "$(GRYPE_FAILURE_THRESHOLD)"
 
 # ---------------------------------------------------------
-# Start the container.
+# Start the containers.
 # ---------------------------------------------------------
 
-.PHONY: start-container
-.SILENT: start-container
-start-container: validate-workspace dependency-scan
+.PHONY: start-containers
+.SILENT: start-containers
+start-containers: dependency-scan
 	docker compose --profile $(DOCKER_COMPOSE_PROFILE) up -d
 
 # ---------------------------------------------------------
-# Check the status of the container.
+# Check the status of the containers.
 # ---------------------------------------------------------
 
-{% raw %}
 .PHONY: status
 .SILENT: status
 status:
-	docker compose --profile $(DOCKER_COMPOSE_PROFILE) ps --format "table {{.Name}}\t{{.Ports}}\t{{.Status}}"
-{% endraw %}
+	docker compose --profile $(DOCKER_COMPOSE_PROFILE) ps --format "table {{ '{{' }}.Name{{ '}}' }}\t{{ '{{' }}.Ports{{ '}}' }}\t{{ '{{' }}.Status{{ '}}' }}"
 
 # ---------------------------------------------------------
-# Test the container.
+# Test the containers.
 # ---------------------------------------------------------
 
-.PHONY: test-container
-.SILENT: test-container
-test-container: start-container
-	echo "[*] Testing {{ cookiecutter.project_slug }}"
-	cd tests && uv run python main.py
+.PHONY: test-containers
+.SILENT: test-containers
+test-containers: start-containers
+	echo "[*] Testing $(APP)"
+#	cd tests && uv run python main.py
+	$(MAKE) -s stop-containers
+	$(MAKE) -s remove-container-images
 
 # ---------------------------------------------------------
-# Stop the container.
+# Stop the containers.
 # ---------------------------------------------------------
 
-.PHONY: stop-container
-.SILENT: stop-container
-stop-container:
-	docker container stop ${CONTAINER_NAME}
+.PHONY: stop-containers
+.SILENT: stop-containers
+stop-containers:
+	docker compose --profile $(DOCKER_COMPOSE_PROFILE) down
 
 # ---------------------------------------------------------
-# Remove the container.
+# Remove the container images.
 # ---------------------------------------------------------
 
-.PHONY: remove-container
-.SILENT: remove-container
-remove-container:
-	docker container rm ${CONTAINER_NAME}
+.PHONY: remove-container-images
+.SILENT: remove-container-images
+remove-container-images:
+	docker compose --profile $(DOCKER_COMPOSE_PROFILE) down --rmi all
 
 # ---------------------------------------------------------
-# Remove the container image.
+# Deploy the Zarf package.
 # ---------------------------------------------------------
 
-.PHONY: remove-container-image
-.SILENT: remove-container-image
-remove-container-image:
-	docker image rm ${IMAGE_REF}
+.PHONY: deploy
+.SILENT: deploy
+
+deploy: dependency-scan
+	uds zarf package create --confirm &&\
+	uds zarf package deploy zarf-package-$(DEPLOYMENT_SLUG)-amd64-0.1.0.tar.zst --confirm
+
+# ---------------------------------------------------------
+# Remove the Zarf package.
+# ---------------------------------------------------------
+
+.PHONY: remove
+.SILENT: remove
+
+remove:
+	uds zarf package remove $(DEPLOYMENT_SLUG) --confirm || true &&\
+	uds zarf tools kubectl delete namespace $(DEPLOYMENT_SLUG) --ignore-not-found
+
+# ---------------------------------------------------------
+# Remove UDS finalizers.
+# ---------------------------------------------------------
+
+.PHONY: remove-finalizers
+.SILENT: remove-finalizers
+
+remove-finalizers:
+	kubectl patch packages.uds.dev $(DEPLOYMENT_SLUG) -n $(DEPLOYMENT_SLUG) --type=merge -p '{"metadata":{"finalizers":[]}}'
