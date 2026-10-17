@@ -36,5 +36,16 @@ services:
       retries: 2
       start_period: 5s
 
+  frontend:
+    profiles: [all, frontend]
+    build:
+      context: frontend
+    image: whalefall/frontend:latest
+    container_name: whalefall-frontend
+    ports:
+      - "5173:5173"
+    env_file:
+      - frontend/${ENV_FILE:-.env.example}
+
 volumes:
   database:

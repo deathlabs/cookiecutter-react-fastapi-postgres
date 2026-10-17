@@ -11,11 +11,6 @@ image:
 service: 
   type: ClusterIP
   name: frontend
-  port: 8080
+  port: 5173
   hostname: 0.0.0.0
-langgraph:
-  deployment:
-    url: http://inference:8001/api/v1
-copilotkit:
-  telemetry:
-    disabled: true
+

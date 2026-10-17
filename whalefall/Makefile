@@ -18,8 +18,8 @@ DOCKER_COMPOSE_PROFILE ?= all
 export ENV_FILE ?=
 
 # Set app metadata.
-APP := {{ cookiecutter.project_slug }}
-DEPLOYMENT_SLUG := {{ cookiecutter.__deployment_slug }}
+APP := whalefall
+DEPLOYMENT_SLUG := whalefall
 
 # Set container metadata.
 DATABASE_BUILD_CONTEXT := database
@@ -92,7 +92,7 @@ format:
 .PHONY: secrets
 .SILENT: secrets
 secrets:
-	echo "[*] Checking $(APP)'s source code for hardcoded secrets"
+	echo "[*] Checking $(APP)'s source code for secrets"
 	trufflehog filesystem \
 		--no-update \
 		--fail \

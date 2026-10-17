@@ -27,7 +27,7 @@ spec:
         selector:
           app.kubernetes.io/component: frontend
         host: whalefall
-        port: 8080
+        port: 5173
 
   # Put the frontend behind a MFA-wall.
   sso:
