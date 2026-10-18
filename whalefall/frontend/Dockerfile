@@ -6,15 +6,14 @@ WORKDIR /home/whalefall/
 COPY whalefall/ .
 RUN echo "[*] VITE_BACKEND_URL has been set to '$VITE_BACKEND_URL'" &&\
     npm install &&\
-    npm run build &&\
-    mv "$(find dist/assets/index-*.js | head -n 1)" dist/assets/index.js
- 
+    npm run build
+
 FROM alpine:3.24
 LABEL image.authors="Victor Fernandez III, @cyberphor"
 WORKDIR /var/lib/nginx/
 RUN apk add --no-cache nginx
 COPY nginx.conf /etc/nginx/nginx.conf
 COPY default.conf /etc/nginx/conf.d/default.conf 
-COPY --from=stage_1 /home/whalefall/dist/assets/ html/
+COPY --from=stage_1 /home/whalefall/dist/ html/
 EXPOSE 5173
 CMD ["nginx", "-g", "daemon off;"]
