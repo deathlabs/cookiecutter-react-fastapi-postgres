@@ -32,6 +32,11 @@ SessionDep = Annotated[Session, Depends(get_session)]
 app = FastAPI()
 
 
+@app.get("/api/v1/health/")
+def read_health():
+    return {"status": "healthy"}
+
+
 @app.on_event("startup")
 def on_startup():
     create_db_and_tables()

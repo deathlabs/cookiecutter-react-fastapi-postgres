@@ -40,6 +40,8 @@ services:
     profiles: [all, frontend]
     build:
       context: frontend
+      args:
+        VITE_BACKEND_URL: http://localhost:8000
     image: whalefall/frontend:latest
     container_name: whalefall-frontend
     ports:
