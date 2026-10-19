@@ -16,4 +16,5 @@ COPY nginx.conf /etc/nginx/nginx.conf
 COPY default.conf /etc/nginx/conf.d/default.conf 
 COPY --from=stage_1 /home/whalefall/dist/ html/
 EXPOSE 5173
+USER nginx
 CMD ["nginx", "-g", "daemon off;"]
