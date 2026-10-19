@@ -1,12 +1,12 @@
 # backend/chart/values.yaml
 
 ---
-app: squidfall
-namespace: squidfall
+app: whalefall
+namespace: whalefall
 replicaCount: 1
 image: 
   pullPolicy: Always
-  repository: squidfall/backend
+  repository: whalefall/backend
   tag: latest
 service: 
   type: ClusterIP
@@ -17,7 +17,7 @@ database:
   host: database
   port: 5432
   sslmode: disable
-  secret_key: squidfall
-  name: squidfall
+  secret_key: whalefall
+  name: whalefall
   user: postgres
   password: postgres

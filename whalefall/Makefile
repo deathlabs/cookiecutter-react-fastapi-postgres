@@ -226,7 +226,7 @@ start-containers: dependency-scan
 .PHONY: status
 .SILENT: status
 status:
-	docker compose --profile $(DOCKER_COMPOSE_PROFILE) ps --format "table {{ '{{' }}.Name{{ '}}' }}\t{{ '{{' }}.Ports{{ '}}' }}\t{{ '{{' }}.Status{{ '}}' }}"
+	docker compose --profile $(DOCKER_COMPOSE_PROFILE) ps --format "table {{.Name}}\t{{.Ports}}\t{{.Status}}"
 
 # ---------------------------------------------------------
 # Test the containers.

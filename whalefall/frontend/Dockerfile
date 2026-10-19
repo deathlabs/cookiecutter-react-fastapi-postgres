@@ -1,14 +1,20 @@
 FROM node:lts-alpine3.24 AS stage_1
-WORKDIR /home/frontend
-COPY whalefall/package*.json ./
-RUN npm ci
+ARG VITE_BACKEND_URL
+ENV VITE_BACKEND_URL=${VITE_BACKEND_URL}
+SHELL ["/bin/ash", "-eo", "pipefail", "-c"]
+WORKDIR /home/whalefall/
 COPY whalefall/ .
-RUN npm run build
+RUN echo "[*] VITE_BACKEND_URL has been set to '$VITE_BACKEND_URL'" &&\
+    npm install &&\
+    npm run build
 
-FROM node:lts-alpine3.24
+FROM alpine:3.24
 LABEL image.authors="Victor Fernandez III, @cyberphor"
-WORKDIR /home/frontend
-RUN apk upgrade --no-cache libcrypto3 libssl3
-USER 65532:65532
+WORKDIR /var/lib/nginx/
+RUN apk add --no-cache nginx
+COPY nginx.conf /etc/nginx/nginx.conf
+COPY default.conf /etc/nginx/conf.d/default.conf 
+COPY --from=stage_1 /home/whalefall/dist/ html/
 EXPOSE 5173
-CMD ["node", "server.js"]
+USER nginx
+CMD ["nginx", "-g", "daemon off;"]

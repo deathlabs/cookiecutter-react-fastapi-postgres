@@ -30,3 +30,13 @@ spec:
           envFrom:
             - secretRef:
                 name: {{ .Values.service.name }}
+          volumeMounts:
+            {{- range .Values.volumes }}
+            - name: {{ .name }}
+              mountPath: {{ .mountPath }}
+            {{- end }}
+      volumes:
+        {{- range .Values.volumes }}
+        - name: {{ .name }}
+          emptyDir: {}
+        {{- end }}

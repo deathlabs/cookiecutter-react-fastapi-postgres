@@ -1,16 +1,20 @@
 # frontend/chart/values.yaml
 
 ---
-app: squidfall
-namespace: squidfall
+app: whalefall
+namespace: whalefall
 replicaCount: 1
 image: 
   pullPolicy: Always
-  repository: squidfall/frontend
+  repository: whalefall/frontend
   tag: latest
 service: 
   type: ClusterIP
   name: frontend
   port: 5173
   hostname: 0.0.0.0
-
+volumes:
+  - name: logs
+    mountPath: /var/log/nginx
+  - name: tmp
+    mountPath: /var/lib/nginx/tmp
