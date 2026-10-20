@@ -31,12 +31,14 @@ DATABASE_VEX_YAML_PATH := $(DATABASE_BUILD_CONTEXT)/vex.yaml
 DATABASE_VEX_JSON_PATH := $(DATABASE_BUILD_CONTEXT)/vex.json
 
 BACKEND_BUILD_CONTEXT := backend
+BACKEND_PROJECT_PATH := $(BACKEND_BUILD_CONTEXT)/$(APP)
 BACKEND_DOCKERFILE_PATH := $(BACKEND_BUILD_CONTEXT)/Dockerfile
 BACKEND_CONTAINER_IMAGE := $(APP)/$(BACKEND_BUILD_CONTEXT):latest
 BACKEND_CONTAINER := $(APP)_$(BACKEND_BUILD_CONTEXT)
 BACKEND_SBOM_PATH := $(APP)-$(BACKEND_BUILD_CONTEXT)-sbom.json
 BACKEND_VEX_YAML_PATH := $(BACKEND_BUILD_CONTEXT)/vex.yaml
 BACKEND_VEX_JSON_PATH := $(BACKEND_BUILD_CONTEXT)/vex.json
+ALEMBIC_VERSIONS_PATH := $(BACKEND_PROJECT_PATH)/alembic/versions
 
 FRONTEND_BUILD_CONTEXT := frontend
 FRONTEND_DOCKERFILE_PATH := $(FRONTEND_BUILD_CONTEXT)/Dockerfile
@@ -63,7 +65,20 @@ GRYPE_FAILURE_THRESHOLD ?= medium
 .SILENT: lock
 lock:
 	echo "[*] Locking $(APP)'s backend Python dependencies"
-	cd $(BACKEND_BUILD_CONTEXT)/$(APP)/ && uv lock
+	cd "$(BACKEND_PROJECT_PATH)" && uv lock
+
+# ---------------------------------------------------------
+# Reset the Alembic migration source.
+# ---------------------------------------------------------
+
+.PHONY: migrate
+.SILENT: migrate
+migrate:
+	echo "[*] Migrating $(APP)'s backend object models"
+	rm -f "$(ALEMBIC_VERSIONS_PATH)"/*.py
+	rm -rf "$(ALEMBIC_VERSIONS_PATH)/__pycache__"
+	cd "$(BACKEND_PROJECT_PATH)" &&\
+	uv run alembic -c alembic.ini revision --autogenerate
 
 # ---------------------------------------------------------
 # Check the source code for quality.

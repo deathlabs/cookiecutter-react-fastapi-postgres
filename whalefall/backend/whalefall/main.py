@@ -1,18 +1,21 @@
+# Standard library imports.
+from os import getenv
+
+# Third library imports.
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
+# Local imports.
+from whalefall.routes import router
 
 app = FastAPI()
 
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[getenv("FRONTEND_HOST", "http://localhost:5173")],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-@app.get("/api/v1/health/")
-def read_health():
-    return {"status": "healthy"}
-
-
-@app.get("/")
-def read_root():
-    return {"Hello": "World"}
-
-
-@app.get("/items/{item_id}")
-def read_item(item_id: int, q: str | None = None):
-    return {"item_id": item_id, "q": q}
+app.include_router(router, prefix="/api/v1")
