@@ -11,10 +11,14 @@ RUN echo "[*] VITE_BACKEND_URL has been set to '$VITE_BACKEND_URL'" &&\
 FROM alpine:3.24
 LABEL image.authors="Victor Fernandez III, @cyberphor"
 WORKDIR /var/lib/nginx/
-RUN apk add --no-cache nginx
+RUN apk add --no-cache gettext nginx &&\
+    mkdir -p conf.d &&\
+    chown nginx:nginx conf.d
 COPY nginx.conf /etc/nginx/nginx.conf
-COPY default.conf /etc/nginx/conf.d/default.conf 
+COPY default.conf /etc/nginx/templates/default.conf.template
+COPY --chmod=755 docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 COPY --from=stage_1 /home/whalefall/dist/ html/
 EXPOSE 5173
 USER nginx
+ENTRYPOINT ["docker-entrypoint.sh"]
 CMD ["nginx", "-g", "daemon off;"]

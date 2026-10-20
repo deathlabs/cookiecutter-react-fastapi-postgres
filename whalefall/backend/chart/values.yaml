@@ -13,11 +13,6 @@ service:
   name: backend
   port: 8000
 database:
-  engine: postgres
-  host: database
-  port: 5432
-  sslmode: disable
-  secret_key: whalefall
-  name: whalefall
-  user: postgres
-  password: postgres
+  name: "###ZARF_VAR_PGDATABASE###"
+  user: "###ZARF_VAR_PGUSER###"
+  password: "###ZARF_VAR_PGPASSWORD###"

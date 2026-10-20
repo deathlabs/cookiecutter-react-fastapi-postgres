@@ -9,53 +9,18 @@ metadata:
     dev.uds.title: whalefall
 
 variables:
-  # Database container.
-  - name: DATABASE_PGDATABASE
+  - name: PGDATABASE
     sensitive: false
     description: Database name
-  - name: DATABASE_PGUSER
+  - name: PGUSER
     sensitive: false
     description: Database user name
-  - name: DATABASE_PGPASSWORD
+  - name: PGPASSWORD
     sensitive: true
     description: Database user password
-
-  # Backend container.
-  - name: BACKEND_SECRET_KEY
-    sensitive: true
-    description: Secret key
-  - name: BACKEND_DEBUG
-    sensitive: false
-    description: Enable debug mode
-  - name: BACKEND_DB_ENGINE
-    sensitive: false
-    description: Database engine 
-  - name: BACKEND_PGHOST
-    sensitive: false
-    description: Database hostname
-  - name: BACKEND_PGDATABASE
-    sensitive: false
-    description: Database name
-  - name: BACKEND_PGPORT
-    sensitive: false
-    description: Database port 
-  - name: BACKEND_PGSSLMODE
-    sensitive: false
-    description: SSL mode for 
-  - name: BACKEND_PGUSER
-    sensitive: false
-    description: Database user name
-  - name: BACKEND_PGPASSWORD
-    sensitive: true
-    description: Database user password
-
-  # Frontend container.
   - name: FRONTEND_PORT
     sensitive: false
     description: Frontend port
-  - name: FRONTEND_HOSTNAME
-    sensitive: false
-    description: Frontend hostname
 
 components:
   - name: uds-package

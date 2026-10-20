@@ -4,6 +4,11 @@
 app: whalefall
 namespace: whalefall
 replicaCount: 1
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 100
+  runAsGroup: 101
+  fsGroup: 101
 image: 
   pullPolicy: Always
   repository: whalefall/frontend
@@ -11,8 +16,7 @@ image:
 service: 
   type: ClusterIP
   name: frontend
-  port: 5173
-  hostname: 0.0.0.0
+  port: "###ZARF_VAR_FRONTEND_PORT###"
 volumes:
   - name: logs
     mountPath: /var/log/nginx

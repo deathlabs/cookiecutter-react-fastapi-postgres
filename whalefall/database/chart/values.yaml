@@ -16,6 +16,6 @@ storage:
   path: /var/lib/postgresql
   size: 5Gi
 database:
-  name: whalefall
-  user: postgres
-  password: postgres
+  name: "###ZARF_VAR_PGDATABASE###"
+  user: "###ZARF_VAR_PGUSER###"
+  password: "###ZARF_VAR_PGPASSWORD###"
