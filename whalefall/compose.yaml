@@ -36,17 +36,15 @@ services:
 
   frontend:
     profiles: [all, frontend]
-    build:
-      context: frontend
-      args:
-        VITE_BACKEND_URL: http://localhost:8000
+    build: frontend
     image: whalefall/frontend:latest
     ports:
       - "${FRONTEND_PORT:-5173}:${FRONTEND_PORT:-5173}"
     env_file:
       - frontend/${ENV_FILE:-.env.example}
-    environment:
-      FRONTEND_PORT: "${FRONTEND_PORT:-5173}"
+    depends_on:
+      backend:
+        condition: service_healthy
 
 volumes:
   database:

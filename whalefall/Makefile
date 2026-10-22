@@ -304,3 +304,12 @@ remove:
 
 remove-finalizers:
 	kubectl patch packages.uds.dev $(DEPLOYMENT_SLUG) -n $(DEPLOYMENT_SLUG) --type=merge -p '{"metadata":{"finalizers":[]}}'
+
+# ---------------------------------------------------------
+# Check the status of the Zarf package.
+# ---------------------------------------------------------
+
+.PHONY: status-uds
+.SILENT: status-uds
+status-uds:
+	kubectl get pods -n $(APP)

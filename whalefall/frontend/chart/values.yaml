@@ -17,6 +17,8 @@ service:
   type: ClusterIP
   name: frontend
   port: "###ZARF_VAR_FRONTEND_PORT###"
+backend:
+  url: http://backend:8000
 volumes:
   - name: logs
     mountPath: /var/log/nginx
