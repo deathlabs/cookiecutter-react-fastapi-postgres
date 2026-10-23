@@ -1,4 +1,14 @@
 {
+  "_copy_without_render": [
+    ".github/workflows",
+    ".ruff_cache",
+    "backend/chart/templates",
+    "backend/*/.venv",
+    "database/chart/templates",
+    "frontend/chart/templates",
+    "frontend/*/dist",
+    "frontend/*/node_modules"
+  ],
   "__project_names": [
     "Woody",
     "Buzz",

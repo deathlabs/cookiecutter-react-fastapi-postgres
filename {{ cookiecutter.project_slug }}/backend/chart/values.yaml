@@ -1,0 +1,20 @@
+# backend/chart/values.yaml
+
+---
+app: {{ cookiecutter.project_slug }}
+namespace: {{ cookiecutter.project_slug }}
+replicaCount: 1
+image: 
+  pullPolicy: Always
+  repository: {{ cookiecutter.project_slug }}/backend
+  tag: latest
+service: 
+  type: ClusterIP
+  name: backend
+  port: 8000
+database:
+  host: database
+  port: 5432
+  name: "###ZARF_VAR_PGDATABASE###"
+  user: "###ZARF_VAR_PGUSER###"
+  password: "###ZARF_VAR_PGPASSWORD###"

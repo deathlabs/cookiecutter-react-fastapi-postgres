@@ -1,0 +1,10 @@
+# Third party imports.
+from fastapi import APIRouter
+
+# Local imports.
+from {{ cookiecutter.project_slug }}.routes.health import health_api
+from {{ cookiecutter.project_slug }}.routes.items import items_api
+
+router = APIRouter()
+router.include_router(health_api)
+router.include_router(items_api)
