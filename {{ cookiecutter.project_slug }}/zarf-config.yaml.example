@@ -1,0 +1,10 @@
+# zarf-config.yaml.example
+
+---
+package:
+  deploy:
+    set:
+      PGDATABASE: "{{ cookiecutter.project_slug }}"
+      PGUSER: "postgres"
+      PGPASSWORD: "postgres"
+      FRONTEND_PORT: "5173"
