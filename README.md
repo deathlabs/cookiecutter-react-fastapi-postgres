@@ -2,17 +2,17 @@
 
 [![CI Pipeline](https://github.com/deathlabs/cookiecutter-react-fastapi-postgres/actions/workflows/ci.yaml/badge.svg)](https://github.com/deathlabs/cookiecutter-react-fastapi-postgres/actions/workflows/ci.yaml)
 
-A Cookiecutter template for creating a full-stack app consisting of a React frontend, FastAPI backend, and PostgreSQL database. 
+A [cookiecutter](https://cookiecutter.readthedocs.io) template for creating a full-stack app consisting of a React frontend, FastAPI backend, and PostgreSQL database. 
 
 ## Quickstart
-
-There are two ways to start using this template. Use Option 1 to create an app for your own project. Use Option 2 to explore the template by cloning the repository and running its Makefile to create, start, and test an example app. 
 
 The instructions below assume you have or will get the following software installed: [Make](https://www.gnu.org/software/make/), [Docker](https://docs.docker.com/get-started/get-docker/), [uv](https://docs.astral.sh/uv/), [Ruff](https://docs.astral.sh/ruff/), [Semgrep](https://semgrep.dev/), [TruffleHog](https://github.com/trufflesecurity/trufflehog), [Hadolint](https://github.com/hadolint/hadolint), [Syft](https://github.com/anchore/syft#installation), [Grype](https://github.com/anchore/grype#installation), [yq](https://github.com/mikefarah/yq), and [cookiecutter](https://github.com/cookiecutter/cookiecutter). Ruff, Semgrep, TruffleHog, Hadolint, Syft, and Grype are used in our development workflow to help identify and reduce security risks introduced by this cookiecutter template.
 
 ### Option 1
 
-**Step 1.** Run Cookiecutter against the GitHub repository.
+Start here if you want to jump into creating an app without exploring the `cookiecutter` template first.
+
+**Step 1.** Run `cookiecutter` against this repository.
 
 ```bash
 cookiecutter https://github.com/deathlabs/cookiecutter-react-fastapi-postgres.git
@@ -20,7 +20,7 @@ cookiecutter https://github.com/deathlabs/cookiecutter-react-fastapi-postgres.gi
 
 When prompted, either accept the default values or provide your own.
 
-**Step 2.** Open the app you created. 
+**Step 2.** Change directories to the app you just you created. 
 
 **Step 3.** Use the Makefile to create, start, and test your app.
 
@@ -30,13 +30,15 @@ make
 
 ### Option 2
 
+Start here if you want to explore the `cookiecutter` template before using it on a real project.
+
 **Step 1.** Clone the repository.
 
 ```bash
 git clone https://github.com/deathlabs/cookiecutter-react-fastapi-postgres.git
 ```
 
-**Step 2.** Change to the repository directory.
+**Step 2.** Change directories to the repository you just downloaded.
 
 ```bash
 cd cookiecutter-react-fastapi-postgres
@@ -48,15 +50,15 @@ cd cookiecutter-react-fastapi-postgres
 make
 ```
 
-**Step 4.** Open the created app in VS Code. Replace `<project-name>` with the name of the server you created.
+**Step 4.** Open the created app (replace `<project-name>` with the actual name of your project).
 
 ```bash
-code build/<project-name>
+cd build/<project-name>
 ```
 
 ## Cleaning Up
 
-To stop your app and delete its container images, enter the commands below.
+To stop your app and delete its container images, enter the commands below from the root directory of your project.
 
 ```bash
 make stop-containers
