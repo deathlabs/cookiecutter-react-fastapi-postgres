@@ -5,10 +5,10 @@ WORKDIR /home/backend/
 COPY entrypoint.sh entrypoint.sh
 COPY {{ cookiecutter.project_slug }}/ {{ cookiecutter.project_slug }}/
 ENV UV_PYTHON_INSTALL_DIR=/home/backend/.uv-python
-RUN apk add --no-cache python3=3.14.8-r0 uv=0.11.19-r0 && \
+RUN apk add --no-cache python3=3.14.10-r1 uv=0.11.19-r1 && \
     apk upgrade --no-cache libcrypto3 libssl3 zlib &&\
     uv sync --directory {{ cookiecutter.project_slug }} --frozen --python /usr/bin/python3 && \
-    uv run --directory {{ cookiecutter.project_slug }} python -m pip uninstall pip -y || true &&\
+    (uv run --directory {{ cookiecutter.project_slug }} python -m pip uninstall pip -y || true) &&\
     addgroup -g 1000 {{ cookiecutter.project_slug }} &&\
     adduser -D -G {{ cookiecutter.project_slug }} -u 1000 {{ cookiecutter.project_slug }} -h /home/backend/ &&\
     chmod u+x /home/backend/entrypoint.sh &&\
