@@ -4,6 +4,7 @@
 package:
   deploy:
     set:
+      PGHOST: "database"
       PGDATABASE: "{{ cookiecutter.project_slug }}"
       PGUSER: "postgres"
       PGPASSWORD: "postgres"
