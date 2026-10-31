@@ -274,13 +274,21 @@ remove-container-images:
 	docker compose --profile $(DOCKER_COMPOSE_PROFILE) down --rmi all
 
 # ---------------------------------------------------------
+# Check for the Zarf configuration file.
+# ---------------------------------------------------------
+
+.PHONY: check-zarf-config
+.SILENT: check-zarf-config
+check-zarf-config:
+	test -f "zarf-config.yaml" || { echo "[!] Cannot find zarf-config.yaml" >&2; exit 1; }
+
+# ---------------------------------------------------------
 # Deploy the Zarf package.
 # ---------------------------------------------------------
 
 .PHONY: deploy
 .SILENT: deploy
-
-deploy: dependency-scan
+deploy: check-zarf-config dependency-scan
 	uds zarf package create --confirm &&\
 	uds zarf package deploy zarf-package-$(DEPLOYMENT_SLUG)-amd64-0.1.0.tar.zst --confirm
 
